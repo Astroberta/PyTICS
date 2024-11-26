@@ -1,1 +1,1 @@
-# PyTICS2
+# PyTICS
