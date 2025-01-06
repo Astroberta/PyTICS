@@ -1,1 +1,3 @@
-# PyTICS2
+# PyTICS
+
+# PyTICS will be available for public use soon
