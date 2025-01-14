@@ -13,14 +13,15 @@ import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 from scipy.interpolate import interp1d
 from scipy.stats import linregress
+from tqdm import tqdm
 
 class Filter:
-    def __init__(self, name, value=7.8):
+    def __init__(self, name, value=7.8, verbose=True):
         self.name = name
         self.value = value
-        self.zp = 21.3
+        self.zp = [0.0, 0.0] # Default values
         self.lc2 = None
-        
+        self.verbose = verbose
         
 
     def __repr__(self):
@@ -62,6 +63,14 @@ class Filter:
         self.AGN_ID = AGN_ID
         self.TEL = TEL
         
+
+        #### Check that filters are the same in ALL 
+        #### Overrride entry
+        tmp_mask = Star_File.Filter == self.name
+        self.TEL = np.sort(np.unique(Star_File.telid[tmp_mask]))
+        TEL = self.TEL
+
+
         start_time = time.time()
     
         #Select stars based on fraction of datapoints
@@ -77,7 +86,7 @@ class Filter:
         
         #Total number of stars used in calibration
         Nstars = len(Star_IDs)
-        print('No. of Stars: '+ str(Nstars))
+        print('          No. of Stars: '+ str(Nstars))
         
         #Select star data based on filter and star IDs
         Star_Data = self.Locate_Star_Filter(self.Locate_Star_ID(Star_File, Star_IDs), Filter)
@@ -125,7 +134,8 @@ class Filter:
         
         star_mag_correction = 0.
         loop = 0
-        
+
+        pbar = tqdm(total = MAX_LOOPS)
         while loop < MAX_LOOPS:
             # ---------------------------------  1.dmagt  -------------------------------
             #if __name__ == "__main__":
@@ -244,22 +254,288 @@ class Filter:
                         All_par_diff.extend((abs(np.array(tr[-1]) - np.array(tr[-2])) / np.array(tr_err[-1])))
                 #print(max(All_par_diff))
                 if max(All_par_diff) < tiny:
-                    print('Iteration ' + str(loop + 1) + '/' + str(MAX_LOOPS) + ' Finished')
+                    print('         Total Iterations ' + str(loop + 1))
                     df['m_star'] = df['m_star'] + star_mag_correction
                     df['mag_aper'] = df['mag_aper'] + star_mag_correction
-                    print('Total run time:', time.time() - start_time)
+                    print(f'        Total run time: {time.time() - start_time:5.2f} s\n')
                     break
-            print('Iteration ' + str(loop + 1) + '/' + str(MAX_LOOPS) + ' Finished')
+            #print('Iteration ' + str(loop + 1) + '/' + str(MAX_LOOPS) + ' Finished')
             loop = loop + 1
+            pbar.update(1)
+        pbar.close()
         if loop == MAX_LOOPS:
             df['m_star'] = df['m_star'] + star_mag_correction
             df['mag_aper'] = df['mag_aper'] + star_mag_correction
-            print('Total run time:', time.time() - start_time)
+            print(f'         Total run time: {time.time() - start_time:5.2f} s\n')
 
         self.DF = df
         self.TR = TRACES
         
-        return(df, TRACES)
+        #return(df, TRACES)
+
+    def CorrUpdate(self, Star_File, Filter, MAX_LOOPS = 200, bad_IDs = [],
+            safe = 0.6, frac = 0.5, TEL = None, 
+            AGN_ID = None, Star_Lim = 100):
+        """Algorithm to compute telescope correction parameters, star magnitudes, and 
+        extra variance as well as their errors.
+        
+        Input:
+        Star_File - Uncalibrated Star data (pd dataframe).
+        Filter - Filter (String).
+        MAX_LOOPS - (Optional) Max number of loops if convergence isn't reached (int).
+        bad_IDs - (Optional) Star IDs to omit in the calibration, primarily meant for 
+                    variable stars (list/array).
+        safe - (Optional) Safety step size to avoid overstepping (float).
+        frac - (Optional) Fraction of stars with number of datapoints above max number of epochs (float).
+        TEL - Telescope list (list/array)
+        AGN_ID - AGN ID (float)
+        
+        Output:
+        df - dataframe containing final correction parameters, extra variances, their 
+                errors and their corrected magnitudes (pd dataframe)
+        TRACES - Traces of the correction parameters (arrays)
+        """
+        # ======================= Select stars to use in calibration ========================
+
+        self.Star_File = Star_File
+        self.AGN_ID = AGN_ID
+        self.TEL = TEL
+        
+        start_time = time.time()
+    
+        #Select stars based on fraction of datapoints
+        Star_IDs = self.Brightest_Reduced(Star_File, Filter, frac = frac)
+        
+        #Further select stars based on variability
+        if len(bad_IDs) > 0:
+            Star_IDs = [i for i in Star_IDs if i not in bad_IDs]
+        
+        #Max number of stars to use
+        if Star_Lim != None and len(Star_IDs) > Star_Lim:
+            Star_IDs = Star_IDs[:Star_Lim]
+        
+        #Total number of stars used in calibration
+        Nstars = len(Star_IDs)
+        print('          No. of Stars: '+ str(Nstars))
+        
+        #Select star data based on filter and star IDs
+        Star_Data = self.Locate_Star_Filter(self.Locate_Star_ID(Star_File, Star_IDs), Filter)
+        
+        # ====================== Dataframes to return at the end ============================
+        
+        #Length of correction parameter dataframe
+        df_length = len(Star_Data['id_apass'].values)
+        
+        #'scope_mean' and 'scope_mean_err' are temporary and will not be returned in the end, just used to speed up computation
+        df = pd.DataFrame({'id_apass': Star_Data['id_apass'].values, 
+                           'Filter': Star_Data['Filter'].values,
+                           'MJD': Star_Data['MJD'].values, 'telid': Star_Data['telid'].values, 
+                           'scope_mean': df_length*[0.], 'scope_mean_err': df_length*[0.],
+                           'mag_aper': Star_Data['mag_aper'].values, 
+                           'err_aper': Star_Data['err_aper'].values,
+                           'dmagt': df_length*[0.], 'dmagt_err': df_length*[0.],
+                           'rms_t': df_length*[0.],
+                           'rms_t_err': df_length*[0.], 'dmags': df_length*[0.], 
+                           'dmags_err': df_length*[0.],
+                           'rms_sc':df_length*[0.], 'rms_sc_err': df_length*[0.], 
+                           'm_star': df_length*[0.],
+                           'm_star_err': df_length*[0.], 'rms_star': df_length*[0.], 
+                           'rms_star_err': df_length*[0.],
+                           'err_tot': Star_Data['err_aper'].values, 
+                           'DMAGT': df_length*[0.], 'DMAGS': df_length*[0.],
+                           'DMAGT_err': df_length*[0.], 'DMAGS_err': df_length*[0.],
+                           'airmass': Star_Data['airmass'].values, 
+                           'seeing': Star_Data['seeing'].values}) 
+        
+        df.set_index(Star_Data.index.values)
+        try:
+            if self.verbose: 
+                print(f' [PyTICS] Found {df.shape[0] - self.DF.shape[0]} new images')
+        except:
+            if self.verbose: 
+                print(f' [PyTICS] No Calibration file found.')
+            return
+        df.to_csv('new_df.csv')
+        self.DF.to_csv('old_df')
+        updated_df = pd.merge(df, self.DF, 
+                              on=['id_apass', 'MJD'], how='left', suffixes=('', '_df1'))
+        filter_col = [col for col in updated_df if col.endswith('_df1')]+['MJD','id_apass']
+        #updated_df.columns
+        updated_df = updated_df[filter_col]
+        
+        updated_df.columns = updated_df.columns.str.strip('_df1')
+        #print(updated_df.columns)
+        ll = updated_df.columns == 'teli'
+        updated_df.columns.values[ll] = 'telid'
+        updated_df.fillna(0, inplace=True)
+        updated_df = updated_df.reindex(columns=df.columns)
+        ss = updated_df.Filter == 0
+        updated_df[ss] = df[ss]
+        df = updated_df.copy()
+        updated_df = 0.
+                
+        #df.to_csv('final_updf.csv')
+        #stop
+        # ==================================== Traces ====================================
+        
+        epochs = []
+        dmagts = [] ; dmagts_err = []
+        rms_ts = [] ; rms_ts_err = []
+        dmagss = [] ; dmagss_err = []
+        rms_scs = [] ; rms_scs_err = []
+        mstars = [] ; mstars_err = []
+        rms_stars = [] ; rms_stars_err = []
+        DMAGTS = [] ; DMAGTS_err = []
+        DMAGSS = [] ; DMAGSS_err = []
+        
+        # ============================== Intercalibration =================================
+        
+        star_mag_correction = 0.
+        loop = 0
+        pbar = tqdm(total = MAX_LOOPS)
+        while loop < MAX_LOOPS:
+            # ---------------------------------  1.dmagt  -------------------------------
+            #if __name__ == "__main__":
+            #print("BEFORE",df)
+            df = self.process_dataframe_parallel2(df, loop, safe, Star_IDs)
+            #print("AFTER",df)
+            # ---------------------------------- 2.dmags --------------------------------
+            #Compute temporary mean of star using optimal average
+            for ID in Star_IDs:
+                
+                #Select data for particular telescope
+                Star_Data_S = self.Locate_Star_ID(df, ID)
+                Mag = Star_Data_S['mag_aper'].values
+                Err = Star_Data_S['err_tot'].values
+                Mean, Mean_err = self.Generic_Optimal(Mag, Err)
+                # JVHS edited below....
+                if loop ==0:
+                    #print('here....')
+                    Mean, Mean_err = np.nanmedian(Star_Data_S['m_star'].values),\
+                             np.nanmedian(Star_Data_S['m_star_err'].values)
+                
+                #Update dataframe
+                df['m_star'] = np.where((df['id_apass'] == ID), Mean, df['m_star'])
+                df['m_star_err'] = np.where((df['id_apass'] == ID), Mean_err, df['m_star_err'])
+            
+            #if __name__ == "__main__":
+            df = self.process_dataframe_parallel3(df, loop, safe, Star_IDs)
+                
+            
+            dat = df
+            initial_DMAGS = (dat.DMAGS + dat.dmags).values
+            DMAGS_mean, DMAGS_mean_err = self.Generic_Optimal(initial_DMAGS, dat['dmags_err'].values)
+            #print(DMAGS_mean, DMAGS_mean_err)
+            Corr1 = dat.dmags - DMAGS_mean
+            
+            #Propagate error in new dmagt accordingly
+            CorrE = (dat.dmags_err**2 + DMAGS_mean_err**2)**0.5
+            
+            #Update dataframe
+            df.loc[Corr1.index, 'dmags'] = Corr1
+            df.loc[CorrE.index, 'dmags_err'] = CorrE
+            df.loc[CorrE.index, 'DMAGS_err'] = CorrE
+            
+            #Updated dataframe
+            dat = df
+            Corr2 = dat.DMAGS + dat.dmags
+            
+            #Update dataframe
+            df.loc[Corr2.index, 'DMAGS'] = Corr2
+            
+            # ---------------------------------- 3.m(*) --------------------------------
+            
+            #if __name__ == "__main__":
+            df = self.process_dataframe_parallel4(df, loop, safe)
+            
+            first_star_corr = self.Locate_Star_ID(df, Star_IDs[0])['m_star'].values[0]
+    
+            df['mag_aper'] = df['mag_aper'].values - first_star_corr
+            df['m_star'] = df['m_star'].values - first_star_corr
+    
+            #Keep track of how much the data shifts in total
+            star_mag_correction = star_mag_correction + first_star_corr
+            
+            #Update traces
+            epochs_temp = []
+            dmagts_temp = [] ; dmagts_err_temp = []
+            rms_t_temp = [] ; rms_t_err_temp = []
+            DMAGTS_temp = [] ; DMAGTS_err_temp = []
+            dmagss_temp = [] ; dmagss_err_temp = []
+            DMAGSS_temp = [] ; DMAGSS_err_temp = []
+            rms_sc_temp = [] ; rms_sc_err_temp = []
+            
+            for Telescope in TEL:
+    
+                Star_Data_T = self.Locate_Star_Scope(df, Telescope)
+                dat = Star_Data_T.sort_values('MJD')
+                
+                unique_epochs = pd.unique(dat['MJD'])
+                all_epochs = dat['MJD'].values
+                unique_epoch_ind = np.array([list(all_epochs).index(e) for e in unique_epochs])
+                
+                epochs_temp.append(dat['MJD'].values[unique_epoch_ind])
+                dmagts_temp.append(dat['dmagt'].values[unique_epoch_ind]) ; dmagts_err_temp.append(dat['dmagt_err'].values[unique_epoch_ind])
+                rms_t_temp.append(dat['rms_t'].values[unique_epoch_ind]) ; rms_t_err_temp.append(dat['rms_t_err'].values[unique_epoch_ind])
+                DMAGTS_temp.append(dat['DMAGT'].values[unique_epoch_ind]) ; DMAGTS_err_temp.append(dat['DMAGT_err'].values[unique_epoch_ind])
+                
+    
+                dmagss_temp.append(dat['dmags'].values[0]) ; dmagss_err_temp.append(dat['dmags_err'].values[0])
+                DMAGSS_temp.append(dat['DMAGS'].values[0]) ; DMAGSS_err_temp.append(dat['DMAGS_err'].values[0])
+                rms_sc_temp.append(dat['rms_sc'].values[0]) ; rms_sc_err_temp.append(dat['rms_sc_err'].values[0])
+                
+            epochs.append(np.array(epochs_temp, dtype = object))
+            dmagts.append(np.array(dmagts_temp, dtype = object)) ; dmagts_err.append(np.array(dmagts_err_temp, dtype = object))
+            rms_ts.append(np.array(rms_t_temp, dtype = object)) ; rms_ts_err.append(np.array(rms_t_err_temp, dtype = object))
+            DMAGTS.append(np.array(DMAGTS_temp, dtype = object)) ; DMAGTS_err.append(np.array(DMAGTS_err_temp, dtype = object))
+            dmagss.append(np.array(dmagss_temp, dtype = object)) ; dmagss_err.append(np.array(dmagss_err_temp, dtype = object))
+            DMAGSS.append(np.array(DMAGSS_temp, dtype = object)) ; DMAGSS_err.append(np.array(DMAGSS_err_temp, dtype = object))
+            rms_scs.append(np.array(rms_sc_temp, dtype = object)) ; rms_scs_err.append(np.array(rms_sc_err_temp, dtype = object))
+            
+            mstars_temp = [] ; mstars_err_temp = []
+            rms_stars_temp = [] ; rms_stars_err_temp = []
+            for ID in Star_IDs:
+                dat = self.Locate_Star_ID(df, ID)
+                mstars_temp.append(dat['m_star'].values[0]) ; mstars_err_temp.append(dat['m_star_err'].values[0])
+                rms_stars_temp.append(dat['rms_star'].values[0]) ; rms_stars_err_temp.append(dat['rms_star_err'].values[0])
+            mstars.append(np.array(mstars_temp)) ; mstars_err.append(np.array(mstars_err_temp))
+            rms_stars.append(np.array(rms_stars_temp)) ; rms_stars_err.append(np.array(rms_stars_err_temp))
+    
+            TRACES = [dmagts, dmagts_err, rms_ts, rms_ts_err, DMAGTS, DMAGTS_err, dmagss, dmagss_err, rms_scs, rms_scs_err, mstars, mstars_err, rms_stars, rms_stars_err, DMAGSS, DMAGSS_err]
+    
+            #Check convergence
+            tiny = 1*10**(-4)
+            All_par_diff = []
+            if loop > 0:
+                for i in np.arange(0, len(TRACES) - 1, 2):
+                    tr = TRACES[i]
+                    tr_err = TRACES[i+1]
+                    try:
+                        All_par_diff.extend((abs((np.concatenate(tr[-1]).ravel()) - (np.concatenate(tr[-2]).ravel())) / np.concatenate(tr_err[-1]).ravel()))
+                    except:
+                        All_par_diff.extend((abs(np.array(tr[-1]) - np.array(tr[-2])) / np.array(tr_err[-1])))
+                #print(max(All_par_diff))
+                if max(All_par_diff) < tiny:
+                    print('         Total Iterations ' + str(loop + 1))
+                    df['m_star'] = df['m_star'] + star_mag_correction
+                    df['mag_aper'] = df['mag_aper'] + star_mag_correction
+                    print(f'        Total run time: {time.time() - start_time:5.2f} s\n')
+                    break
+            #print('Iteration ' + str(loop + 1) + '/' + str(MAX_LOOPS) + ' Finished')
+            loop = loop + 1
+            pbar.update(1)
+            
+        if loop == MAX_LOOPS:
+            df['m_star'] = df['m_star'] + star_mag_correction
+            df['mag_aper'] = df['mag_aper'] + star_mag_correction
+            print(f'         Total run time: {time.time() - start_time:5.2f} s\n')
+    
+        self.DF = df
+        self.TR = TRACES
+        
+        #return(df, TRACES)
+        pbar.close()
+
     
     def dmagt(self, object_data, loop, safe, Star_IDs):
         object_data = object_data
@@ -380,6 +656,8 @@ class Filter:
         object_data.loc[Shift.index, 'mag_aper'] = Shift
         
         return object_data
+
+    
     def process_object_data(self,object_data, loop, safe, Telescope):
         object_data = object_data
         #Shift mags by telescope means
@@ -1182,8 +1460,9 @@ class Filter:
             ax4[0].set_xticks(np.arange(int(min(Data.MJD)), int(max(Data.MJD) + 100), 100), labels = np.arange(int(min(Data.MJD)), int(max(Data.MJD) + 100), 100), fontproperties = font, size = 15)
             #ax5.set_yticks(np.arange(int(max(Data.mag_aper)), int(min(Data.mag_aper)), 1), labels = np.arange(int(max(Data.mag_aper)), int(min(Data.mag_aper)), 1), fontproperties = font, size = 15)
     
-    def AGN_LC(self, unit = 'mag', err_th = 0.05, Plot = True, Rem_out = True, 
-               AGN_ID = None, TEL = None, zp = [0.,0.]):
+    def AGN_LC(self,  unit = 'mag', err_th = 0.05, 
+               Plot = True, Rem_out = True, 
+               AGN_ID = None, TEL = None, zp = None):
         """ Return Dataframe with calibrated AGN Lightcurve. Choose whether to leave in outliers.
             Can also plot the AGN lightcurve.
         
@@ -1192,23 +1471,35 @@ class Filter:
         Star_Data - Calibrated star dataframe (pd dataframe).
         Filter - Filter (string).
         err_th - (Optional) Error threshold for clipping outliers.
-        Plot - (Optional) Choose whether to display the error distributions and lightcurves (Bool).
-        Rem_out = (Optional) Choose whether to remove outliers from returned AGN dataframe (Bool). 
+        Plot - (Optional) Choose whether to display the error distributions 
+                and lightcurves (Bool).
+        Rem_out = (Optional) Choose whether to remove outliers from 
+                returned AGN dataframe (Bool). 
         
         Output:
         AGN_DF - dataframe containing calibrated AGN lightcurve.
        """
+        #super().__init__()
+#        Original_Star_File = pd.read_pickle(Original_Star_File)
         Original_Star_File = self.Star_File
         Star_Data = self.DF
         Filter = self.name
         AGN_ID = self.AGN_ID
         TEL = self.TEL
+     #### Check that filters are the same in ALL 
+        tmp_mask = Original_Star_File.Filter == self.name
+        self.TEL = np.unique(Original_Star_File.telid[tmp_mask])
+        TEL = self.TEL
+
+        if zp is None: 
+            zp = self.zp
         #Set up dataframe
         columns = ['Filter','telid', 'MJD', 'mag', 'err', 'err_sys']
         AGN_DF = pd.DataFrame(columns=columns)
         font = 'Times New Roman'
-        print("Juan: ", Filter,AGN_ID)
-        AGN_Data = self.Locate_Star_ID(self.Locate_Star_Filter(Original_Star_File, Filter), AGN_ID)
+        #print("Juan: ", Filter,AGN_ID)
+        AGN_Data = self.Locate_Star_ID(self.Locate_Star_Filter(Original_Star_File,
+                                                               Filter), AGN_ID)
         for scope in TEL:
             #Select data based on telescope
             AGN_Data2 = self.Locate_Star_Scope(AGN_Data, scope)
@@ -1216,16 +1507,33 @@ class Filter:
                 
                 #Select data based on Epoch
                 AGN_Data3 = self.Locate_Star_Epoch(AGN_Data2, E)
-                Star_Data2 = self.Locate_Star_Epoch(self.Locate_Star_Filter(self.Locate_Star_Scope(Star_Data, scope), Filter), E).head(1)
+                Star_Data2 = self.Locate_Star_Epoch(self.Locate_Star_Filter( \
+                    self.Locate_Star_Scope(Star_Data, scope), Filter), E).head(1)
                 
                 #Assuming the AGN has a datapoint for that epoch...
                 if len(Star_Data2) != 0:
                     
                     #Apply correction parameters
-                    AGN_mag = AGN_Data3['mag_aper'].values - Star_Data2['DMAGT'].values - Star_Data2['DMAGS'].values + zp[0]
-                    AGN_mag_err = (AGN_Data3['err_aper'].values[0]**2 + Star_Data2['rms_sc'].values[0]**2 + Star_Data2['rms_t'].values[0]**2)**0.5
+                    AGN_mag = AGN_Data3['mag_aper'].values - \
+                              Star_Data2['DMAGT'].values - \
+                              Star_Data2['DMAGS'].values + zp[0]
+                    AGN_mag_err = (AGN_Data3['err_aper'].values[0]**2 + \
+                                   Star_Data2['rms_sc'].values[0]**2 + \
+                                   Star_Data2['rms_t'].values[0]**2)**0.5
                     #AGN_DF = AGN_DF.append({'Filter': Filter, 'telid': scope, 'MJD': E, 'mag': AGN_mag[0], 'err': AGN_mag_err}, ignore_index = True)
-                    AGN_DF = pd.concat([AGN_DF, pd.DataFrame([pd.Series({'Filter': Filter, 'telid': scope, 'MJD': E, 'mag': AGN_mag[0], 'err': AGN_mag_err, 'err_sys': AGN_mag_err*0.0+zp[1]})], columns = pd.Series({'Filter': Filter, 'telid': scope, 'MJD': E, 'mag': AGN_mag[0], 'err': AGN_mag_err, 'err_sys': AGN_mag_err*0.0+zp[1]}).index)]).reset_index(drop=True)
+                    AGN_DF = pd.concat([AGN_DF, 
+                                        pd.DataFrame(\
+                                        [pd.Series({'Filter': Filter,
+                                                    'telid': scope, 'MJD': E,
+                                                    'mag': AGN_mag[0], 
+                                                    'err': AGN_mag_err, 
+                                                     'err_sys': AGN_mag_err*0.0+zp[1]})],
+                                        columns = pd.Series({'Filter': Filter, 
+                                                             'telid': scope, 
+                                                             'MJD': E, 
+                                                             'mag': AGN_mag[0], 
+                                                             'err': AGN_mag_err,
+                    'err_sys': AGN_mag_err*0.0+zp[1]}).index)]).reset_index(drop=True)
         
     
         if Plot == True:
@@ -1239,10 +1547,13 @@ class Filter:
             num_of_plots = (T_no - 1) // 5 + 1
             
             if len(TEL) < 5:
-                fig0, ax0 = plt.subplots(num_of_plots, len(TEL), sharex = False, figsize = (20, 2.5*num_of_plots))
+                fig0, ax0 = plt.subplots(num_of_plots, 
+                                         len(TEL), sharex = False, 
+                                         figsize = (20, 2.5*num_of_plots))
                 ax0 = ax0.reshape(1, len(TEL))
             else:
-                fig0, ax0 = plt.subplots(num_of_plots, 5, sharex = False, figsize = (20, 2.5*num_of_plots))
+                fig0, ax0 = plt.subplots(num_of_plots, 5, 
+                                         sharex = False, figsize = (20, 2.5*num_of_plots))
             fig0.subplots_adjust(wspace=0.1, hspace = 0.4)
             
             fig, ax = plt.subplots(1,1,figsize=(15, 3.5), sharex = False)
@@ -1250,8 +1561,10 @@ class Filter:
             ax.set_title('Uncalibrated AGN Lightcurve', fontproperties = font, size = 15)
             ax.set_xlabel('MJD',fontproperties = font, size = 15)
             ax.set_ylabel('Inst. Mag',fontproperties = font, size = 15)
-            ax.tick_params(axis = 'both', which = 'major', direction = 'in', length = 6, top = True, right = True)
-            ax.tick_params(axis = 'both', which = 'minor', direction = 'in', length = 4, top = True, right = True)
+            ax.tick_params(axis = 'both', which = 'major', 
+                           direction = 'in', length = 6, top = True, right = True)
+            ax.tick_params(axis = 'both', which = 'minor', 
+                           direction = 'in', length = 4, top = True, right = True)
             ax.minorticks_on()
             ax.invert_yaxis()
     
@@ -1717,7 +2030,11 @@ class Filter:
         else:
             raise ValueError(str(mode) + " is not a valid mode input. Please select either 'single' or 'double'.")
     
-    def Phot_Cal(DF, filt, catalogue='apass_updated.csv', AGN_ID=None):
+    def Phot_Cal(self, filt, catalogue='apass_updated.csv'):
+        if self.verbose: print(' [PyTICS] Calculating Zeropoint\n         Using: '+catalogue)
+        DF = self.DF
+        AGN_ID= self.AGN_ID
+        
         df = {}
         apass = pd.read_csv(catalogue)
         for i,idx in enumerate(np.unique(DF['id_apass'])[:]):
@@ -1744,7 +2061,7 @@ class Filter:
         diffs_err = np.sqrt(zps['err'].values**2 + zps['err_lco'].values**2)
         pp = sigma_clip(diffs, sigma=3)
         zp,aa,zp_err,ee = arx(diffs[~pp.mask],diffs_err[~pp.mask])
-        return zp, zp_err
+        self.zp = [zp, zp_err]
     
     #Random other functions ---------------
     def Line_Mod(X, M, Y0):
