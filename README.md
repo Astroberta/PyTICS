@@ -8,6 +8,8 @@
 #### Instrumental magnitude error
 #### Unique telescope identifier
 
+### This should contain all your available comparisons stars as well as your Target.
+
 ### The jupyter notebook shows example usage of the PyTICS algorithm for NGC 3783 taken with ten Las Cumbres Observatory (LCO) 1-m telescopes for the u band 
 
 ### See attached the paper on the algorithm (Vieliute et al. submitted to RASTI)
