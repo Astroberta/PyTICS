@@ -14,4 +14,4 @@
 
 ### The jupyter notebook shows example usage of the PyTICS algorithm for NGC 3783 taken with ten Las Cumbres Observatory (LCO) 1-m telescopes for the u band 
 
-### See attached the paper on the algorithm (Vieliute et al. submitted to RASTI)
+### If you encounter plotting errors, try setting the 'plot' argument in the functions to False, you will still get the final data tables - bugs are still being fixed.
