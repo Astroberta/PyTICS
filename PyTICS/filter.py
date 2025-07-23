@@ -562,11 +562,6 @@ class Filter:
         self.TEL = TEL
         
         
-        #### Check that filters are the same in ALL 
-        #### Overrride entry
-        tmp_mask = Star_File.Filter == self.name
-        self.TEL = np.sort(np.unique(Star_File.telid[tmp_mask]))
-        TEL = self.TEL      
         start_time = time.time()
 
         #Create panda dataframe with given arrays
@@ -581,7 +576,13 @@ class Filter:
             Star_File = np.nan
 
         self.Star_File = Star_File
-        
+                
+        #### Check that filters are the same in ALL 
+        #### Overrride entry
+        tmp_mask = Star_File.Filter == self.name
+        self.TEL = np.sort(np.unique(Star_File.telid[tmp_mask]))
+        TEL = self.TEL
+                
         #Select stars based on fraction of datapoints
         Star_IDs = self.Brightest_Reduced(Star_File, Filter, frac = frac)
         
