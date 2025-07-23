@@ -561,6 +561,12 @@ class Filter:
         self.AGN_ID = AGN_ID
         self.TEL = TEL
         
+        
+        #### Check that filters are the same in ALL 
+        #### Overrride entry
+        tmp_mask = Star_File.Filter == self.name
+        self.TEL = np.sort(np.unique(Star_File.telid[tmp_mask]))
+        TEL = self.TEL      
         start_time = time.time()
 
         #Create panda dataframe with given arrays
@@ -574,8 +580,8 @@ class Filter:
             print('Your file has the wrong length')
             Star_File = np.nan
 
-        print(Star_File)
-                
+        self.Star_File = Star_File
+        
         #Select stars based on fraction of datapoints
         Star_IDs = self.Brightest_Reduced(Star_File, Filter, frac = frac)
         
@@ -1742,7 +1748,7 @@ class Filter:
             ax4[0].set_xticks(np.arange(int(min(Data.MJD)), int(max(Data.MJD) + 100), 100), labels = np.arange(int(min(Data.MJD)), int(max(Data.MJD) + 100), 100), fontproperties = font, size = 15)
             #ax5.set_yticks(np.arange(int(max(Data.mag_aper)), int(min(Data.mag_aper)), 1), labels = np.arange(int(max(Data.mag_aper)), int(min(Data.mag_aper)), 1), fontproperties = font, size = 15)
     
-    def AGN_LC(self,  unit = 'mag', err_th = 0.05, 
+    def AGN_LC(self, unit = 'mag', err_th = 0.05, 
                Plot = True, Rem_out = True, 
                AGN_ID = None, TEL = None, zp = None):
         """ Return Dataframe with calibrated AGN Lightcurve. Choose whether to leave in outliers.
