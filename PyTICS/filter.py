@@ -574,9 +574,10 @@ class Filter:
         else:
             print('Your file has the wrong length')
             Star_File = np.nan
-                
+
+        print(Star_File)
         #Select stars based on fraction of datapoints
-        Star_IDs = self.Brightest_Reduced(Star_File, Filter, frac = frac, AGN_ID = AGN_ID)
+        Star_IDs = self.Brightest_Reduced(Star_File, Filter, frac = frac)
         
         #Further select stars based on variability
         if len(bad_IDs) > 0:
