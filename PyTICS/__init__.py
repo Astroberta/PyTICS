@@ -16,5 +16,5 @@ from .pytics import PyTICS
 
 __author__ = "Roberta Vieliute"
 __version__ = "0.1.0"
-__citation__ = "Vielute et al. (2024). PyTICS: A Python package for intercalibration of photometric astronomical fields. Version 0.1.0."
+__citation__ = "Vielute et al. (2025). PyTICS: A Python package for intercalibration of photometric astronomical fields. Version 0.1.0."
 
