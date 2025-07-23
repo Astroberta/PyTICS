@@ -1247,8 +1247,6 @@ class Filter:
 
         #Select specified filter data
         Star_Data0 = self.Locate_Star_Filter(Star_File, Filter)
-        print('testing 1')
-        print(Star_Data0)
         
         #Make sure AGN isn't included
         Star_IDs = [k for k in pd.unique(Star_Data0['id_apass']) if k!= AGN_ID]
@@ -1284,8 +1282,6 @@ class Filter:
         MAGS = sorted(MAGS)
         Brightest_indices = [MAGS_ref.index(i) for i in MAGS]
 
-        print('testing 2')
-        print(np.array(Brightest_indices))
         Brightest_IDs = list(np.array(IDS)[np.array(Brightest_indices)])
         return Brightest_IDs
     
