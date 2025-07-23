@@ -558,24 +558,24 @@ class Filter:
         # ======================= Select stars to use in calibration ========================
 
         self.data_arrays = data_arrays
-        Data = self.data_arrays
         self.AGN_ID = AGN_ID
         self.TEL = TEL
         
         start_time = time.time()
 
         #Create panda dataframe with given arrays
-        if len(Data) == 6:
-            Star_File = pd.DataFrame({'MJD': Data[0], 'Filter': Data[1], 'id_apass': Data[2], 'mag_aper': Data[3], 'err_aper': Data[4], 'telid': Data[5], 'airmass': [np.nan]*len(Data[5]), 'seeing': [np.nan]*len(Data[5])})
-        elif len(Data) == 7: 
-            Star_File = pd.DataFrame({'MJD': Data[0], 'Filter': Data[1], 'id_apass': Data[2], 'mag_aper': Data[3], 'err_aper': Data[4], 'telid': Data[5], 'airmass': Data[6], 'seeing': [np.nan]*len(Data[5])})
-        elif len(Data) == 8: 
-            Star_File = pd.DataFrame({'MJD': Data[0], 'Filter': Data[1], 'id_apass': Data[2], 'mag_aper': Data[3], 'err_aper': Data[4], 'telid': Data[5], 'airmass': Data[6], 'seeing': Data[7]})
+        if len(data_arrays) == 6:
+            Star_File = pd.DataFrame({'MJD': data_arrays[0], 'Filter': data_arrays[1], 'id_apass': data_arrays[2], 'mag_aper': data_arrays[3], 'err_aper': data_arrays[4], 'telid': data_arrays[5], 'airmass': [np.nan]*len(data_arrays[5]), 'seeing': [np.nan]*len(data_arrays[5])})
+        elif len(data_arrays) == 7: 
+            Star_File = pd.DataFrame({'MJD': data_arrays[0], 'Filter': data_arrays[1], 'id_apass': data_arrays[2], 'mag_aper': data_arrays[3], 'err_aper': data_arrays[4], 'telid': data_arrays[5], 'airmass': data_arrays[6], 'seeing': [np.nan]*len(data_arrays[5])})
+        elif len(data_arrays) == 8: 
+            Star_File = pd.DataFrame({'MJD': data_arrays[0], 'Filter': data_arrays[1], 'id_apass': data_arrays[2], 'mag_aper': data_arrays[3], 'err_aper': data_arrays[4], 'telid': data_arrays[5], 'airmass': data_arrays[6], 'seeing': data_arrays[7]})
         else:
             print('Your file has the wrong length')
             Star_File = np.nan
 
         print(Star_File)
+                
         #Select stars based on fraction of datapoints
         Star_IDs = self.Brightest_Reduced(Star_File, Filter, frac = frac)
         
@@ -1247,6 +1247,8 @@ class Filter:
 
         #Select specified filter data
         Star_Data0 = self.Locate_Star_Filter(Star_File, Filter)
+        print('testing 1')
+        print(Star_Data0)
         
         #Make sure AGN isn't included
         Star_IDs = [k for k in pd.unique(Star_Data0['id_apass']) if k!= AGN_ID]
@@ -1281,6 +1283,9 @@ class Filter:
         MAGS_ref = MAGS
         MAGS = sorted(MAGS)
         Brightest_indices = [MAGS_ref.index(i) for i in MAGS]
+
+        print('testing 2')
+        print(np.array(Brightest_indices))
         Brightest_IDs = list(np.array(IDS)[np.array(Brightest_indices)])
         return Brightest_IDs
     
