@@ -16,4 +16,4 @@
 
 ### If you encounter plotting errors, try setting the 'plot' argument in the functions to False, you will still get the final data tables - plotting bugs are still being fixed.
 
-### The python package is available to install git clone, but using the jupyter notebook is recommended for now
+### The python package is available to install git clone, but using the jupyter notebook is recommended while the package is being generalised
