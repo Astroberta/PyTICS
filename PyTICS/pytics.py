@@ -31,7 +31,33 @@ class PyTICS:
         if verbose: print(' [PyTICS] Telescopes Detected:\n        ', self.TEL)
         print(" [PyTICS] Cleaning....")
         self.lco2 = self.Clean(self.lco)
+    
+    
+    def __init_test__(self, Data, TEL, names_list,verbose=True, objname = 'MyAGN',AGN_ID = None):
+        # Initialize a list of NestedObject instances with different names
+        #self.filters = [FilterObject(name, default_value) for name in names_list]
+        if verbose: print(f" [PyTICS] Calibrating {objname} field")
+        self.Data = Data
+        self.verbose = verbose
+        self.objname = objname
+        self.filters = {name: Filter(name,verbose = self.verbose) for name in names_list}
+        self.AGN_ID = AGN_ID
+        self.TEL = TEL
         
+        self.Corrs = {} # initialise Corr output dict.
+        # Optional parameters
+        self.max_loops = 200
+        self.frac = 0.5
+        self.safe = 0.6
+        self.bad_IDs = []
+        self.star_lim = 100 
+        self.Plot = False  # Plot all lightcurves
+        self.unit = 'mag'
+        self.err_th = 0.05
+        self.Rem_out = True
+
+    
+    
     def __repr__(self):
         return f"PyTICS(nested_objects={self.filters})"
 
