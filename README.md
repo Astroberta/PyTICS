@@ -16,7 +16,7 @@
 
 ### If you encounter plotting errors, try setting the 'plot' argument in the functions to False, you will still get the final data tables - plotting bugs are still being fixed.
 
-### The python package is available to install git clone, but using the jupyter notebook is recommended while the package is being generalised
+### The python package is available to install git clone, but using the jupyter notebook is recommended while the package is being generalised. If you do use the package in this way, this is how to run it:
 
 ```python
 import PyTICS
@@ -35,7 +35,13 @@ Inst_Mag_Err = lco2.err_aper.values
 Tel_ID = lco2.telid.values
 
 #Data format:
-Target_ID = AGN_ID
 DATA = [Date, Filter, Star_IDs, Inst_Mag, Inst_Mag_Err, Tel_ID]
 #Define your list of telescopes, even if its just one:
 TEL = pd.unique(lco2.telid.values)
+
+#Run the calibration, which saves star calibration file as .csv
+myagn = PyTICS.PyTICS(DATA, TEL, filters, verbose=True,
+                     objname='NGC3783', AGN_ID=AGN_ID)
+
+#Calibrate your target for specified filter
+Calibrated_AGN = myagn.filters['up'].AGN_LC()
