@@ -19,5 +19,23 @@
 ### The python package is available to install git clone, but using the jupyter notebook is recommended while the package is being generalised
 
 ```python
-test
+import PyTICS
 
+#e.g for our LCO AGN data the filters and unique targed identifier:
+filters = ['up', 'B', 'V']
+AGN_ID = 2387
+#e.g for our LCO data, I get the lists from a pickle file:
+lco2 = pd.read_pickle('lco_latest_stan.pkl')
+
+Date = lco2.MJD.values
+Filter = lco2.Filter.values
+Star_IDs = lco2.id_apass.values
+Inst_Mag = lco2.mag_aper.values
+Inst_Mag_Err = lco2.err_aper.values
+Tel_ID = lco2.telid.values
+
+#Data format:
+Target_ID = AGN_ID
+DATA = [Date, Filter, Star_IDs, Inst_Mag, Inst_Mag_Err, Tel_ID]
+#Define your list of telescopes, even if its just one:
+TEL = pd.unique(lco2.telid.values)
