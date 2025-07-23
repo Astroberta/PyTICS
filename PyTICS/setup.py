@@ -20,6 +20,6 @@ setup(
     python_requires='>=3.6',
     install_requires=[],  # List dependencies here if any
     project_urls={
-        "Citation": "https://doi.org/yourdoi",  # Update with your DOI if applicable
+        "Citation": "https://doi.org/10.1093/rasti/rzaf021",  # Update with your DOI if applicable
     },
 )
