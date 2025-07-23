@@ -33,11 +33,11 @@ class PyTICS:
         self.lco2 = self.Clean(self.lco)
     
     
-    def __init_test__(self, Data, TEL, names_list,verbose=True, objname = 'MyAGN',AGN_ID = None):
+    def __init_test__(self, data_arrays, TEL, names_list,verbose=True, objname = 'MyAGN',AGN_ID = None):
         # Initialize a list of NestedObject instances with different names
         #self.filters = [FilterObject(name, default_value) for name in names_list]
         if verbose: print(f" [PyTICS] Calibrating {objname} field")
-        self.Data = Data
+        self.data_arrays = data_arrays
         self.verbose = verbose
         self.objname = objname
         self.filters = {name: Filter(name,verbose = self.verbose) for name in names_list}
@@ -127,7 +127,7 @@ class PyTICS:
             #if self.verbose:
             #    print('      Latest image taken: {}'.format(self.lco2.MJD.max()))
             
-            filt.CorrUpdate_New(self.Data, name, MAX_LOOPS = self.max_loops, bad_IDs = self.bad_IDs,
+            filt.CorrUpdate_New(self.data_arrays, name, MAX_LOOPS = self.max_loops, bad_IDs = self.bad_IDs,
                                         safe = self.safe, frac = self.frac, TEL = self.TEL, 
                                         AGN_ID = self.AGN_ID, Star_Lim = self.star_lim)
 
