@@ -128,7 +128,7 @@ class PyTICS:
             #if self.verbose:
             #    print('      Latest image taken: {}'.format(self.lco2.MJD.max()))
             
-            filt.CorrUpdate_New(self.data_arrays, self.TEL, name, MAX_LOOPS = self.max_loops, bad_IDs = self.bad_IDs,
+            filt.CorrUpdate_New(self.data_arrays, name, MAX_LOOPS = self.max_loops, bad_IDs = self.bad_IDs,
                                         safe = self.safe, frac = self.frac, TEL = self.TEL, 
                                         AGN_ID = self.AGN_ID, Star_Lim = self.star_lim)
 
