@@ -536,7 +536,7 @@ class Filter:
         #return(df, TRACES)
         pbar.close()
 
-    def CorrUpdate_New(self, Data, Filter, MAX_LOOPS = 200, bad_IDs = [],
+    def CorrUpdate_New(self, data_arrays, Filter, MAX_LOOPS = 200, bad_IDs = [],
             safe = 0.6, frac = 0.5, TEL = None, 
             AGN_ID = None, Star_Lim = 100):
         """Algorithm to compute telescope correction parameters, star magnitudes, and extra variance as well as their errors.
@@ -557,7 +557,8 @@ class Filter:
         """
         # ======================= Select stars to use in calibration ========================
 
-        self.Data = Data
+        self.data_arrays = data_arrays
+        Data = self.data_arrays
         self.AGN_ID = AGN_ID
         self.TEL = TEL
         
