@@ -621,6 +621,8 @@ class Filter:
                            'seeing': Star_Data['seeing'].values}) 
         
         df.set_index(Star_Data.index.values)
+
+        """
         try:
             if self.verbose: 
                 print(f' [PyTICS] Found {df.shape[0] - self.DF.shape[0]} new images')
@@ -649,6 +651,7 @@ class Filter:
         updated_df = 0.
                 
         #df.to_csv('final_updf.csv')
+        """
         #stop
         # ==================================== Traces ====================================
         
