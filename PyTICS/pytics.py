@@ -132,7 +132,7 @@ class PyTICS:
                                         safe = self.safe, frac = self.frac, TEL = self.TEL, 
                                         AGN_ID = self.AGN_ID, Star_Lim = self.star_lim)
 
-            filt.Phot_Cal( name ,catalogue=self.catalogue)
+            #filt.Phot_Cal( name ,catalogue=self.catalogue)
             if self.All_DF.empty:
                 self.All_DF = filt.DF
             else:
