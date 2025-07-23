@@ -90,7 +90,30 @@ class PyTICS:
         self.All_DF.to_csv(self.objname +'_Calibrated_Stars'+'.csv')
         if self.verbose: 
             print(' [PyTICS] Saved Field Stars in: '+ self.objname +'_Calibrated_Stars.csv')
+    
+    def CalibrateUpdate_New(self):
+        """ Do all the filters at once"""
+        self.All_DF = pd.DataFrame()
+        for name, filt in self.filters.items():
+            if self.verbose: print(f" [PyTICS] Processing Filter: {name}")
+            # Example operation: append '-processed' to the value of each object
+            #filt.name += "-processed"
+            #if self.verbose:
+            #    print('      Latest image taken: {}'.format(self.lco2.MJD.max()))
+            
+            filt.CorrUpdate_New(self.Data, name, MAX_LOOPS = self.max_loops, bad_IDs = self.bad_IDs,
+                                        safe = self.safe, frac = self.frac, TEL = self.TEL, 
+                                        AGN_ID = self.AGN_ID, Star_Lim = self.star_lim)
 
+            filt.Phot_Cal( name ,catalogue=self.catalogue)
+            if self.All_DF.empty:
+                self.All_DF = filt.DF
+            else:
+                self.All_DF = pd.concat([self.All_DF,filt.DF],ignore_index=True,)
+                
+        self.All_DF.to_csv(self.objname +'_Calibrated_Stars'+'.csv')
+        if self.verbose: 
+            print(' [PyTICS] Saved Field Stars in: '+ self.objname +'_Calibrated_Stars.csv')
     
     def AGNCalibrate(self):
         # AGN = pd.concat([AGN_DF_up, AGN_DF_B, AGN_DF_gp, 
