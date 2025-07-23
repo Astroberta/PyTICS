@@ -8,7 +8,7 @@ setup(
     author="Roberta Vieliute",
     author_email="rv4@st-andrews.ac.uk",
     description="PyTICS: A Python package for intercalibration of photometric astronomical fields.",
-    long_description=open('README.md').read(),
+    #long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url="https://github.com/astroberta/PyTICS",  # Update with your repository URL
     packages=find_packages(),
