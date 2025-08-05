@@ -1354,8 +1354,13 @@ class Filter:
             T_no = len(TEL)
             num_of_plots = (T_no - 1) // 5 + 1
             if len(TEL) < 5:
-                fig0, ax0 = plt.subplots(num_of_plots, len(TEL), sharex = False, figsize = (15, 2.5*num_of_plots))
-                ax0 = ax0.reshape(1, len(TEL))
+                if len(TEL) == 1:
+                    #small adjustment here if only one telescope is being used
+                    fig0, ax0 = plt.subplots(1, 2, sharex = False, figsize = (20, 2.5*1))
+                    ax0 = ax0.reshape(1, 2)
+                else:
+                    fig0, ax0 = plt.subplots(num_of_plots, len(TEL), sharex = False, figsize = (20, 2.5*num_of_plots))
+                    ax0 = ax0.reshape(1, len(TEL))
             else:
                 fig0, ax0 = plt.subplots(num_of_plots, 5, sharex = False, figsize = (15, 2.5*num_of_plots))
             
