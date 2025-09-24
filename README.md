@@ -42,6 +42,8 @@ TEL = pd.unique(lco2.telid.values)
 #Run the calibration, which saves star calibration file as .csv
 myagn = PyTICS.PyTICS(DATA, TEL, filters, verbose=True,
                      objname='NGC3783', AGN_ID=AGN_ID)
+myagn.max_loops = 100
+myagn.CalibrateUpdate_New()
 
 #Calibrate your target for specified filter
 Calibrated_AGN = myagn.filters['up'].AGN_LC()
