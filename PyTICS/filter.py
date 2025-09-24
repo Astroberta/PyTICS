@@ -1579,7 +1579,7 @@ class Filter:
             T_no = len(TEL)
             num_of_plots = (T_no - 1) // 5 + 1
             
-            if len(TEL) < 5:
+            if len(TEL) < 6:
                 if len(TEL) == 1:
                     #small adjustment here if only one telescope is being used
                     fig0, ax0 = plt.subplots(1, 2, sharex = False, figsize = (20, 2.5*1))
