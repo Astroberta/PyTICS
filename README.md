@@ -47,3 +47,16 @@ myagn.CalibrateUpdate_New()
 
 #Calibrate your target for specified filter
 Calibrated_AGN = myagn.filters['up'].AGN_LC()
+
+```
+#### A note on the .csv file with calibrated star data: The dataframe has a lot of columns that are of no use to the general user and are mainly there to track the convergence etc. The file is needed for the final calibration of your target, as shown in the last line of the code above. If desired, the useful columns in the dataframe are the following:
+
+##### mag_aper: calibrated (instrumental) star magnitude
+
+##### err_tot: total noise model derived for the comparison stars. This is the square sum of the nominal uncertainty err_aper, the star-specific noise term rms_star, the telescope-specific noise term rms_sc, and the time-specific noise term rms_t. For the science target, only err_aper, rms_sc, and rms_t are summed in the noise model.
+
+##### DMAGT: time-specific correction parameter applied to the uncalibrated data.
+
+##### DMAGS: teleScope specific correction parameter applied to the uncalibrated data.
+
+
