@@ -6,12 +6,12 @@
 
 ### 1. **Data Format**
 #### You currently need a list of 6 arrays of data in this order:
-##### Date (e.g. in MJD)
-##### Filter Name
-##### Unique Star identifier
-##### Instrumental magnitude
-##### Instrumental magnitude error
-##### Unique telescope identifier
+##### i) Date (e.g. in MJD)
+##### ii) Filter Name
+##### iii) Unique Star identifier
+##### iv) Instrumental magnitude
+##### v) Instrumental magnitude error
+##### vi) Unique telescope identifier
 
 #### This should contain all your available comparisons stars as well as your Target.
 #### If you encounter plotting errors, try setting the 'plot' argument in the functions to False, you will still get the final data tables - plotting bugs are still being fixed.
