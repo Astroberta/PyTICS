@@ -2,6 +2,9 @@
 
 ### PyTICS allows for easy intercalibration of photometric time-series data, applying a maximum likelihood ensemble photometry method. You can use the attached jupyter notebook ('PyTICS_Example_Use.ipynb') to run the algorithm for now, see below for the data you require. You can contact the author (rv40@st-andrews.ac.uk) if you'd like help with the intercalibration.
 
+### The jupyter notebook shows example usage of the PyTICS algorithm for NGC 3783 taken with ten Las Cumbres Observatory (LCO) 1-m telescopes for the u band 
+
+### 1. Data Format
 #### You currently need a list of 6 arrays of data in this order:
 #### Date (e.g. in MJD)
 #### Filter Name
@@ -11,11 +14,9 @@
 #### Unique telescope identifier
 
 ### This should contain all your available comparisons stars as well as your Target.
-
-### The jupyter notebook shows example usage of the PyTICS algorithm for NGC 3783 taken with ten Las Cumbres Observatory (LCO) 1-m telescopes for the u band 
-
 ### If you encounter plotting errors, try setting the 'plot' argument in the functions to False, you will still get the final data tables - plotting bugs are still being fixed.
 
+### 2. PyTICS package installation (alternative to jupyter notebook)
 ### The python package is available to install via the usual git clone, but using the jupyter notebook is recommended while the package is being generalised. If you do use the package in this way, this is how to run it:
 
 ```python
