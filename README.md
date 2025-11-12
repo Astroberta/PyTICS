@@ -60,12 +60,37 @@ Calibrated_AGN = myagn.filters['up'].AGN_LC()
 ### 3. **Empirical colour-corrections**
 #### As described in the linked publication, using 32 AGN fields we find consistent slopes of the residuals vs star-colours, that can be used to derive the colour-dependent offsets in the LCO telescope data (the 'global solution'). The same colour-corrections can be derived with PyTICS for indivudal fields again using the attached jupyter notebook.
 #### Given the u-g colour index C(u-g), the colour correction parameter can be computed as a*C(u-g) + b, where a and b are specific to each filter.
-| u-band |
+
+#### u band
 | Telescope       | a | b  |
 |------------|:---:|------------:|
-| test1      |  ** | **    |
-| test2        |  ** | **    |
-| test3    |  ** | **     |
+| 1m001      |  ** | **    |
+| 1m003        |  ** | **    |
+| 1m004    |  ** | **     |
+| 1m005    |  ** | **     |
+| 1m006    |  ** | **     |
+| 1m008    |  ** | **     |
+| 1m009    |  ** | **     |
+| 1m010    |  ** | **     |
+| 1m011    |  ** | **     |
+| 1m012    |  ** | **     |
+| 1m013    |  ** | **     |
+
+#### B band
+| Telescope       | a | b  |
+|------------|:---:|------------:|
+| 1m001      |  ** | **    |
+| 1m003        |  ** | **    |
+| 1m004    |  ** | **     |
+| 1m005    |  ** | **     |
+| 1m006    |  ** | **     |
+| 1m008    |  ** | **     |
+| 1m009    |  ** | **     |
+| 1m010    |  ** | **     |
+| 1m011    |  ** | **     |
+| 1m012    |  ** | **     |
+| 1m013    |  ** | **     |
+
 
 
 
