@@ -14,7 +14,6 @@
 ##### vi) Unique telescope identifier
 
 #### This should contain all your available comparisons stars as well as your Target.
-#### If you encounter plotting errors, try setting the 'plot' argument in the functions to False, you will still get the final data tables - plotting bugs are still being fixed.
 
 ### 2. **PyTICS package installation (alternative to jupyter notebook)**
 #### The python package is available to install via the usual git clone, but using the jupyter notebook is recommended while the package is being generalised. If you do use the package in this way, this is how to run it:
