@@ -4,7 +4,7 @@
 
 ### The jupyter notebook shows example usage of the PyTICS algorithm for NGC 3783 taken with ten Las Cumbres Observatory (LCO) 1-m telescopes for the u band 
 
-### 1. <u>Data Format</u>
+### 1. **Data Format**
 #### You currently need a list of 6 arrays of data in this order:
 #### Date (e.g. in MJD)
 #### Filter Name
