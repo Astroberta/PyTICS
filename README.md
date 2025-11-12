@@ -58,8 +58,9 @@ Calibrated_AGN = myagn.filters['up'].AGN_LC()
 ##### DMAGS: teleScope specific correction parameter applied to the uncalibrated data.
 
 ### 3. **Empirical colour-corrections**
-#### As described in the linked publication, using 32 AGN fields we find consistent slopes of the residuals vs star-colours, that can be used the colour-dependent offsets in the LCO telescope data. 
+#### As described in the linked publication, using 32 AGN fields we find consistent slopes of the residuals vs star-colours, that can be used to derive the colour-dependent offsets in the LCO telescope data (the 'global solution'). The same colour-corrections can be derived with PyTICS for indivudal fields again using the attached jupyter notebook.
 #### Given the u-g colour index C(u-g), the colour correction parameter can be computed as a*C(u-g) + b, where a and b are specific to each filter.
+| u-band |
 | Telescope       | a | b  |
 |------------|:---:|------------:|
 | test1      |  ** | **    |
