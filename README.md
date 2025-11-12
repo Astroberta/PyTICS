@@ -57,7 +57,7 @@ Calibrated_AGN = myagn.filters['up'].AGN_LC()
 ##### DMAGS: teleScope specific correction parameter applied to the uncalibrated data.
 
 ### 3. **Empirical colour-corrections**
-#### As described in the linked publication, using 32 AGN fields we find consistent slopes of the residuals vs star-colours, unique to each telescope, that can be used to derive the colour-dependent offsets in the LCO telescope network (the 'global solution'). As empthasised, the colour-corrections can be derived with PyTICS for indiviudal AGN star fields, which may or may not give better colour correction results than the global solution. This can again be done using the attached jupyter notebook.
+#### As described in the linked publication, across 32 AGN fields we find consistent slopes of the residuals vs star-colours, unique to each telescope, that can be used to derive the colour-dependent offsets in the LCO telescope network (the 'global solution'). As empthasised, the colour-corrections can be derived with PyTICS for indiviudal AGN star fields, which may or may not give better colour correction results than the global solution. This can again be done using the attached jupyter notebook. All residuals vs star-colour fits are shown in the 'Residual Fits' folder above - the results may be less reliable with increasing wavelength as apparent from the scatter in the data.
 #### Given the u-g colour index C(u-g) of your target, the colour correction parameter can be computed as a*C(u-g) + b, where a and b are specific to each filter.
 
 #### u band
@@ -144,32 +144,34 @@ Calibrated_AGN = myagn.filters['up'].AGN_LC()
 #### i band
 | Telescope       | a | b  |
 |------------|:---:|:------------:|
-| 1m001      |  ** | **    |
-| 1m003        |  ** | **    |
-| 1m004    |  ** | **     |
-| 1m005    |  ** | **     |
-| 1m006    |  ** | **     |
-| 1m008    |  ** | **     |
-| 1m009    |  ** | **     |
-| 1m010    |  ** | **     |
-| 1m011    |  ** | **     |
-| 1m012    |  ** | **     |
-| 1m013    |  ** | **     |
+| 1m001      |  -0.0013006455273108825 ± 0.0004495298111160413 | 0.0021506179271951684 ± 0.0007971867548234037    |
+| 1m003        |  0.0026665046974566602 ± 0.00042453445721166833 | -0.005431796769014594 ± 0.0007474433760189473    |
+| 1m004    |  -0.0030086389327413647 ± 0.0004679906213163451 | 0.00497383504586576 ± 0.0008072102737690986     |
+| 1m005    |  -0.0004379039915143868 ± 0.00037555135229593993 | 0.00040196658615435435 ± 0.0006553655202176582     |
+| 1m006    |  -1.712662715941141e-05 ± 0.0003485884242597001 | -0.00036920890448730595 ± 0.0006161910144365605     |
+| 1m008    |  0.00011969061176799712 ± 0.0004416268403507097 | -0.00032509028123426764 ± 0.0007719531696207012     |
+| 1m009    |  -0.002021303621053183 ± 0.00044835447484876197 | 0.0036178349413386007 ± 0.0007798045353772044     |
+| 1m010    |  0.0011476117104262783 ± 0.00045774027075327895 | -0.0008472271472724232 0.0007979424766556795     |
+| 1m011    |  0.003421245271737868 ± 0.0005929856005328429 | -0.006807084389972141 ± 0.001025903359466427     |
+| 1m012    |  0.002681128821325511 ± 0.00045640214596417636 | -0.003964324554395679 0.0007966039421517745     |
+| 1m013    |  4.0347776246156e-05 ± 0.0003319308389247456 | -0.0001918975545511185 ± 0.0005809527714801721     |
+| 1m014    | -0.0011133128694334913 ± 0.0003453338623725695 |   0.002014243884830949 ± 0.0006062761446005188   |
 
 #### z band
 | Telescope       | a | b  |
 |------------|:---:|:------------:|
-| 1m001      |  ** | **    |
-| 1m003        |  ** | **    |
-| 1m004    |  ** | **     |
-| 1m005    |  ** | **     |
-| 1m006    |  ** | **     |
-| 1m008    |  ** | **     |
-| 1m009    |  ** | **     |
-| 1m010    |  ** | **     |
-| 1m011    |  ** | **     |
-| 1m012    |  ** | **     |
-| 1m013    |  ** | **     |
+| 1m001      |  -0.0015995825607583794 ± 0.0019452265505484072 | 0.002947866834276909 ± 0.0035193001472409516    |
+| 1m003        |  0.002719912151441477 ± 0.0017738327675096976 | -0.006216584681514447 ± 0.0031951973483253463    |
+| 1m004    |  -0.03509547108881672 ± 0.0029424154782438615 | 0.06419293261779485 ± 0.005100206289662776     |
+| 1m005    |  0.0008152317109679905 ± 0.002010011660926415 | -0.0024897598813421774 ± 0.003633740224406747     |
+| 1m006    |  0.004477116603241019 ± 0.002289336830300889 | -0.010390156271718333 ± 0.00406205370933045     |
+| 1m008    |  0.0009650299178140787 ± 0.0022614828972865927 | -0.00013692314768718746 ± 0.004042747255656449     |
+| 1m009    |  0.0001339560555866677 ± 0.0026014616111071074 | 9.677839868777935e-05 ± 0.004668853153056469     |
+| 1m010    |  -0.0010109657041484877 ± 0.0024667733141644464 |  0.00486356658089716 ± 0.004470596384123714     |
+| 1m011    |  0.007799391458842309 ± 0.0025268368096575326 | -0.01713932205787789 ± 0.004527678589434023     |
+| 1m012    |  0.006581398811924039 ± 0.003053860177210436 | -0.01449990027306963 ± 0.005423557083632083     |
+| 1m013    |  0.00229334812983406 ± 0.0013656344938311991 | -0.004280758363215684 ± 0.0025025465629703162     |
+| 1m014    |  -0.005158974235190732 ± 0.002273919014810923 | 0.009859427898408605 ± 0.004097408957484347     |
 
 
 
